@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lume - Магазин стильной одежды</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <!-- Header -->
+<header>
+    <div class="container header-container">
+        <a href="/" class="logo">
+            <i class="fas fa-crown"></i>L<span>ume</span>
+        </a>
+        
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <nav>
+            <ul>
+                <li><a href="/">Главная</a></li>
+                <li><a href="/catalog/">Каталог</a></li> <!-- ← изменено -->
+                <li><a href="index.html#categories">Категории</a></li>
+                <li><a href="index.html#about">О нас</a></li>
+                <li><a href="index.html#contact">Контакты</a></li>
+            </ul>
+        </nav>
+        
+        <div class="nav-icons">
+            <a href="/catalog/"><i class="fas fa-search"></i></a> <!-- поиск тоже ведёт в каталог -->
+            <a href="/login/"><i class="fas fa-user"></i></a>
+            <a href="/cart/"><i class="fas fa-shopping-bag"></i></a>
+        </div>
+    </div>
+</header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>Стиль начинается с Lume</h1>
+            <p>Откройте для себя эксклюзивную коллекцию одежды, которая подчеркнет вашу индивидуальность. Качество, стиль и комфорт в каждой детали.</p>
+            <a href="#products" class="btn">Коллекция Зима-Весна 2026</a>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section id="products">
+        <div class="container">
+            <div class="section-title">
+                <h2>Популярные товары</h2>
+            </div>
+            
+            <div class="products-grid">
+                <!-- Product 1 -->
+                <div class="product-card">
+                    <div class="product-img">
+                        <img src="https://img.freepik.com/premium-photo/womens-coat-isolated-white-background_1046450-8287.jpg?semt=ais_hybrid&w=740" alt="Стильное пальто">
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Пальто</span>
+                        <h3>Двубортное пальто с поясом</h3>
+                        <div class="product-price">8 499 ₽ <span class="old-price">10 999 ₽</span></div>
+                        <a href="#" class="btn btn-outline">В корзину</a>
+                    </div>
+                </div>
+                
+                <!-- Product 2 -->
+                <div class="product-card">
+                    <div class="product-img">
+                        <img src="https://img.freepik.com/premium-photo/white-sweatshirt-mockup_259293-5490.jpg" alt="Вязаный свитер">
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Свитер</span>
+                        <h3>Вязаный свитер oversize</h3>
+                        <div class="product-price">3 799 ₽</div>
+                        <a href="#" class="btn btn-outline">В корзину</a>
+                    </div>
+                </div>
+                
+                <!-- Product 3 -->
+                <div class="product-card">
+                    <div class="product-img">
+                        <img src="https://gamaking.ru/images_upload-3/TRAF-ZA-%D0%B6%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B5-%D0%B2%D0%B5%D1%81%D0%B5%D0%BD%D0%BD%D0%B8%D0%B5-2023-%D0%BD%D0%BE%D0%B2%D1%8B%D0%B5_222415.jpg" alt="Кожаные брюки">
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Брюки</span>
+                        <h3>Кожаные брюки с высокой талией</h3>
+                        <div class="product-price">6 299 ₽</div>
+                        <a href="#" class="btn btn-outline">В корзину</a>
+                    </div>
+                </div>
+                
+                <!-- Product 4 -->
+                <div class="product-card">
+                    <div class="product-img">
+                        <img src="https://avatars.mds.yandex.net/get-mpic/15542656/2a0000019782bbe1fce996119225cc8b53ec/orig" alt="Платье миди">
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Платья</span>
+                        <h3>Платье миди с цветочным принтом</h3>
+                        <div class="product-price">4 899 ₽ <span class="old-price">5 999 ₽</span></div>
+                        <a href="#" class="btn btn-outline">В корзину</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="categories" id="categories">
+        <div class="container">
+            <div class="section-title">
+                <h2>Категории</h2>
+            </div>
+            
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <h3>Верхняя одежда</h3>
+                    <p>Пальто, куртки, пуховики и плащи для любого сезона</p>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-female"></i>
+                    </div>
+                    <h3>Платья</h3>
+                    <p>От повседневных до вечерних нарядов</p>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-shoe-prints"></i>
+                    </div>
+                    <h3>Обувь</h3>
+                    <p>Удобная и стильная обувь на каждый день</p>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h3>Аксессуары</h3>
+                    <p>Сумки, ремни, шарфы и украшения</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>Почему выбирают Lume</h2>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3>Бесплатная доставка</h3>
+                    <p>При заказе от 5000 ₽ доставка по всей России бесплатно</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <h3>Легкий возврат</h3>
+                    <p>Возврат товара в течение 30 дней без лишних вопросов</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3>Гарантия качества</h3>
+                    <p>Тщательный отбор материалов и контроль качества</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Поддержка 24/7</h3>
+                    <p>Наша команда поддержки всегда готова помочь</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h3>Lume</h3>
+                    <p>Магазин стильной одежды для тех, кто ценит качество и современный дизайн. Мы создаем одежду, которая подчеркивает вашу индивидуальность.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Категории</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Женская одежда</a></li>
+                        <li><a href="#">Мужская одежда</a></li>
+                        <li><a href="#">Детская одежда</a></li>
+                        <li><a href="#">Обувь</a></li>
+                        <li><a href="#">Аксессуары</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Полезные ссылки</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">О нас</a></li>
+                        <li><a href="#">Доставка и оплата</a></li>
+                        <li><a href="#">Возврат</a></li>
+                        <li><a href="#">Политика конфиденциальности</a></li>
+                        <li><a href="#">Контакты</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Контакты</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> Москва, ул. Арбат, 25</li>
+                        <li><i class="fas fa-phone"></i> +7 (495) 123-45-67</li>
+                        <li><i class="fas fa-envelope"></i> info@lume-shop.ru</li>
+                        <li><i class="fas fa-clock"></i> Пн-Вс: 10:00 - 22:00</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2026 Lume. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+    <!-- Модальное окно выбора опций -->
+<div id="productModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:90%;">
+        <h3 id="modalProductName"></h3>
+        <img id="modalProductImage" src="" alt="" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin:15px 0;">
+        
+        <div>
+            <p><strong>Размер:</strong></p>
+            <div id="sizeOptions"></div>
+        </div>
+        <div style="margin-top:15px;">
+            <p><strong>Цвет:</strong></p>
+            <div id="colorOptions"></div>
+        </div>
+        <div style="margin-top:15px;">
+            <label>Количество: 
+                <input type="number" id="quantityInput" min="1" value="1" style="width:60px; padding:5px; margin-left:10px;">
+            </label>
+        </div>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button id="addToCartFromModal" class="btn" style="flex:1;">Добавить в корзину</button>
+            <button id="closeModal" class="btn btn-outline" style="flex:1;">Отмена</button>
+        </div>
+    </div>
+</div>
+    <script src="{% static 'data.js' %}"></script>
+    <script src="{% static 'script.js' %}"></script>
+</body>
+</html>
