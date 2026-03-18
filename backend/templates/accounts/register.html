@@ -80,92 +80,169 @@
             margin-top: 5px;
             display: none;
         }
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container header-container">
-            <a href="{% url 'home' %}" class="logo">
-                <i class="fas fa-crown"></i>L<span>ume</span>
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="{% url 'home' %}">Главная</a></li>
-                    <li><a href="{% url 'catalog' %}">Каталог</a></li>
-                    <li><a href="{% url 'home' %}#categories">Категории</a></li>
-                    <li><a href="{% url 'home' %}#about">О нас</a></li>
-                    <li><a href="{% url 'home' %}#contact">Контакты</a></li>
-                </ul>
-            </nav>
-            <div class="nav-icons">
-                <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
-                <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
-                <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="auth-container">
-            <h2>Создать аккаунт</h2>
-            <form id="registerForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required />
-                    <div class="error-message" id="emailError"></div>
-                </div>
-                <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <input type="password" id="password" minlength="6" required />
-                    <div class="error-message" id="passwordError"></div>
-                </div>
-                <button type="submit" class="btn-auth">Зарегистрироваться</button>
-            </form>
-            <div class="auth-footer">
-                Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
-            </div>
+<header>
+    <div class="container header-container">
+        <a href="{% url 'home' %}" class="logo">
+            <i class="fas fa-crown"></i>L<span>ume</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Главная</a></li>
+                <li><a href="{% url 'catalog' %}">Каталог</a></li>
+                <li><a href="{% url 'home' %}#categories">Категории</a></li>
+                <li><a href="{% url 'home' %}#about">О нас</a></li>
+                <li><a href="{% url 'home' %}#contact">Контакты</a></li>
+            </ul>
+        </nav>
+        <div class="nav-icons">
+            <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
+            <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
+            <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
         </div>
     </div>
+</header>
 
-    <script src="{% static 'auth.js' %}?v=3"></script>
-    <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+<div class="container">
+    <div class="auth-container">
+        <h2>Создать аккаунт</h2>
 
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const emailError = document.getElementById('emailError');
-            const passwordError = document.getElementById('passwordError');
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="full_name">Имя</label>
+                <input type="text" id="full_name" required />
+                <div class="error-message" id="fullNameError"></div>
+            </div>
 
-            emailError.style.display = 'none';
-            passwordError.style.display = 'none';
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required />
+                <div class="error-message" id="emailError"></div>
+            </div>
 
-            let valid = true;
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" minlength="8" required />
+                <div class="error-message" id="passwordError"></div>
+            </div>
 
-            if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-                emailError.textContent = 'Введите корректный email';
-                emailError.style.display = 'block';
-                valid = false;
-            }
+            <div class="form-group">
+                <label for="password2">Подтвердите пароль</label>
+                <input type="password" id="password2" minlength="8" required />
+                <div class="error-message" id="password2Error"></div>
+            </div>
 
-            if (password.length < 6) {
-                passwordError.textContent = 'Пароль должен быть не менее 6 символов';
-                passwordError.style.display = 'block';
-                valid = false;
-            }
+            <button type="submit" class="btn-auth">Зарегистрироваться</button>
+        </form>
 
-            if (!valid) return;
+        <div class="success-message" id="successMessage"></div>
 
-            if (saveUser(email, password)) {
-                setCurrentUser(email);
-                alert('Регистрация успешна! Добро пожаловать в Lume.');
-                window.location.href = '{% url 'home' %}';
-            } else {
-                emailError.textContent = 'Пользователь с таким email уже существует';
-                emailError.style.display = 'block';
-            }
+        <div class="auth-footer">
+            Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const fullName = document.getElementById('full_name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const password2 = document.getElementById('password2').value;
+
+    const fullNameError = document.getElementById('fullNameError');
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+    const password2Error = document.getElementById('password2Error');
+    const successMessage = document.getElementById('successMessage');
+
+    [fullNameError, emailError, passwordError, password2Error].forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+    });
+    successMessage.style.display = 'none';
+    successMessage.textContent = '';
+
+    let valid = true;
+
+    if (!fullName) {
+        fullNameError.textContent = 'Введите имя';
+        fullNameError.style.display = 'block';
+        valid = false;
+    }
+
+    if (!email || !/^\\S+@\\S+\\.\\S+$/.test(email)) {
+        emailError.textContent = 'Введите корректный email';
+        emailError.style.display = 'block';
+        valid = false;
+    }
+
+    if (!password || password.length < 8) {
+        passwordError.textContent = 'Пароль должен быть не менее 8 символов';
+        passwordError.style.display = 'block';
+        valid = false;
+    }
+
+    if (password !== password2) {
+        password2Error.textContent = 'Пароли не совпадают';
+        password2Error.style.display = 'block';
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    try {
+        const response = await fetch('/api/accounts/register/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                full_name: fullName,
+                email: email,
+                password: password,
+                role: 'customer'
+            })
         });
-    </script>
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            if (data.email) {
+                emailError.textContent = Array.isArray(data.email) ? data.email[0] : data.email;
+                emailError.style.display = 'block';
+            } else if (data.password) {
+                passwordError.textContent = Array.isArray(data.password) ? data.password[0] : data.password;
+                passwordError.style.display = 'block';
+            } else {
+                alert(JSON.stringify(data));
+            }
+            return;
+        }
+
+        successMessage.textContent = 'Регистрация прошла успешно. Теперь войди в аккаунт.';
+        successMessage.style.display = 'block';
+
+        setTimeout(() => {
+            window.location.href = "{% url 'login' %}";
+        }, 1200);
+
+    } catch (error) {
+        alert('Ошибка соединения с сервером');
+        console.error(error);
+    }
+});
+</script>
 </body>
 </html>

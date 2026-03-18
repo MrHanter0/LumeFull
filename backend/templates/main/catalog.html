@@ -22,6 +22,8 @@
             cursor: pointer;
             font-weight: 600;
             transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
         }
         .filter-btn.active, .filter-btn:hover {
             background: var(--accent-gold);
@@ -33,75 +35,122 @@
             gap: 30px;
             margin-bottom: 60px;
         }
+        .catalog-topbar {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0 10px;
+        }
+        .catalog-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .catalog-form input,
+        .catalog-form select {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container header-container">
-            <a href="{% url 'home' %}" class="logo">
-                <i class="fas fa-crown"></i>L<span>ume</span>
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="{% url 'home' %}#home">Главная</a></li>
-                    <li><a href="{% url 'catalog' %}">Товары</a></li>
-                    <li><a href="{% url 'home' %}#categories">Категории</a></li>
-                    <li><a href="{% url 'home' %}#about">О нас</a></li>
-                    <li><a href="{% url 'home' %}#contact">Контакты</a></li>
-                </ul>
-            </nav>
-            <div class="nav-icons">
-                <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
-                <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
-                <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="section-title">
-            <h2>Каталог товаров</h2>
-        </div>
-
-        <div class="filters">
-            <button class="filter-btn active" data-category="all">Все</button>
-            <button class="filter-btn" data-category="Пальто">Пальто</button>
-            <button class="filter-btn" data-category="Свитер">Свитера</button>
-            <button class="filter-btn" data-category="Брюки">Брюки</button>
-            <button class="filter-btn" data-category="Платья">Платья</button>
-        </div>
-
-        <div id="productsGrid"></div>
-    </div>
-
-    <!-- Модальное окно выбора опций -->
-    <div id="productModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:90%;">
-            <h3 id="modalProductName"></h3>
-            <img id="modalProductImage" src="" alt="" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin:15px 0;">
-            
-            <div>
-                <p><strong>Размер:</strong></p>
-                <div id="sizeOptions"></div>
-            </div>
-            <div style="margin-top:15px;">
-                <p><strong>Цвет:</strong></p>
-                <div id="colorOptions"></div>
-            </div>
-            <div style="margin-top:15px;">
-                <label>Количество: 
-                    <input type="number" id="quantityInput" min="1" value="1" style="width:60px; padding:5px; margin-left:10px;">
-                </label>
-            </div>
-            <div style="margin-top:20px; display:flex; gap:10px;">
-                <button id="addToCartFromModal" class="btn" style="flex:1;">Добавить в корзину</button>
-                <button id="closeModal" class="btn btn-outline" style="flex:1;">Отмена</button>
-            </div>
+<header>
+    <div class="container header-container">
+        <a href="{% url 'home' %}" class="logo">
+            <i class="fas fa-crown"></i>L<span>ume</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Главная</a></li>
+                <li><a href="{% url 'catalog' %}">Товары</a></li>
+                <li><a href="{% url 'home' %}#categories">Категории</a></li>
+                <li><a href="{% url 'home' %}#about">О нас</a></li>
+                <li><a href="{% url 'home' %}#contact">Контакты</a></li>
+            </ul>
+        </nav>
+        <div class="nav-icons">
+            <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
+            <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
+            <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
         </div>
     </div>
+</header>
 
-    <script src="{% static 'data.js' %}?v=3"></script>
-    <script src="{% static 'catalog.js' %}?v=3"></script>
+<div class="container">
+    <div class="section-title">
+        <h2>Каталог товаров</h2>
+    </div>
+
+    <div class="catalog-topbar">
+        <form method="get" class="catalog-form">
+            <input type="text" name="q" placeholder="Поиск товара..." value="{{ current_query }}">
+
+            <select name="category">
+                <option value="">Все категории</option>
+                {% for category in categories %}
+                <option value="{{ category.slug }}" {% if current_category == category.slug %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <select name="sort">
+                <option value="new" {% if current_sort == 'new' %}selected{% endif %}>Сначала новые</option>
+                <option value="name" {% if current_sort == 'name' %}selected{% endif %}>По названию</option>
+                <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Цена ↑</option>
+                <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Цена ↓</option>
+            </select>
+
+            <button type="submit" class="btn">Применить</button>
+            <a href="{% url 'catalog' %}" class="btn btn-outline">Сбросить</a>
+        </form>
+    </div>
+
+    <div class="filters">
+        <a class="filter-btn {% if not current_category %}active{% endif %}" href="{% url 'catalog' %}">Все</a>
+        {% for category in categories %}
+        <a class="filter-btn {% if current_category == category.slug %}active{% endif %}"
+           href="{% url 'catalog' %}?category={{ category.slug }}">
+            {{ category.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <div id="productsGrid">
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-img">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/400x500?text=No+Image" alt="{{ product.name }}">
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <span class="product-category">{{ product.category.name }}</span>
+                <h3>{{ product.name }}</h3>
+                <div class="product-price">{{ product.price }} ₽</div>
+                <a href="#"
+                   class="btn btn-outline add-to-cart-btn"
+                   data-id="{{ product.id }}"
+                   data-name="{{ product.name }}"
+                   data-category="{{ product.category.name }}"
+                   data-price="{{ product.price }}"
+                   data-image="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/400x500?text=No+Image{% endif %}">
+                    В корзину
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p>По вашему запросу товары не найдены.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="{% static 'script.js' %}?v=5"></script>
 </body>
 </html>
