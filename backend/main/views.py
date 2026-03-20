@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from products.models import Product, Category
 
@@ -45,6 +45,24 @@ def catalog(request):
         'current_category': category_slug or '',
         'current_query': query,
         'current_sort': sort,
+    })
+
+
+def product_detail(request, product_id):
+    product = get_object_or_404(
+        Product.objects.select_related('category'),
+        id=product_id,
+        available=True
+    )
+
+    related_products = Product.objects.filter(
+        available=True,
+        category=product.category
+    ).exclude(id=product.id).order_by('-created')[:4]
+
+    return render(request, 'main/product_detail.html', {
+        'product': product,
+        'related_products': related_products,
     })
 
 

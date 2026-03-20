@@ -14,6 +14,27 @@ function saveCart(cart) {
     localStorage.setItem('lume_cart', JSON.stringify(cart));
 }
 
+function getCurrentUser() {
+    const raw = localStorage.getItem('lume_current_user');
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+function isAuthenticated() {
+    return !!localStorage.getItem('lume_access_token') && !!getCurrentUser();
+}
+
+function logoutUser() {
+    localStorage.removeItem('lume_access_token');
+    localStorage.removeItem('lume_refresh_token');
+    localStorage.removeItem('lume_current_user');
+}
+
 function updateCartCounter() {
     const cart = getCart();
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -48,6 +69,71 @@ function updateCartCounter() {
         counter.textContent = count;
         counter.style.display = count > 0 ? 'flex' : 'none';
     });
+}
+
+function updateUserUI() {
+    const user = getCurrentUser();
+
+    document.querySelectorAll('.fa-user').forEach(icon => {
+        const link = icon.closest('a');
+        if (!link) return;
+
+        link.style.position = 'relative';
+
+        let badge = link.querySelector('.user-auth-badge');
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'user-auth-badge';
+            Object.assign(badge.style, {
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                backgroundColor: '#2ecc71',
+                display: 'none',
+                border: '2px solid white'
+            });
+            link.appendChild(badge);
+        }
+
+        if (user) {
+            badge.style.display = 'block';
+            icon.style.color = '#2ecc71';
+            link.title = `Вы вошли как ${user.full_name || user.email}`;
+        } else {
+            badge.style.display = 'none';
+            icon.style.color = '';
+            link.title = 'Войти';
+        }
+    });
+
+    let userStatus = document.getElementById('userStatusText');
+
+    if (!userStatus) {
+        const navIcons = document.querySelector('.nav-icons');
+        if (navIcons) {
+            userStatus = document.createElement('span');
+            userStatus.id = 'userStatusText';
+            Object.assign(userStatus.style, {
+                marginLeft: '10px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#2ecc71',
+                whiteSpace: 'nowrap'
+            });
+            navIcons.appendChild(userStatus);
+        }
+    }
+
+    if (userStatus) {
+        if (user) {
+            userStatus.textContent = user.full_name || user.email;
+        } else {
+            userStatus.textContent = '';
+        }
+    }
 }
 
 function addToCartFromButton(button) {
@@ -138,9 +224,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userIcon) {
         userIcon.addEventListener('click', e => {
             e.preventDefault();
-            window.location.href = ROUTES.login;
+
+            const user = getCurrentUser();
+
+            if (user) {
+                const shouldLogout = confirm(
+                    `Вы вошли как:\n${user.full_name || 'Пользователь'}\n${user.email}\n\nНажмите OK, чтобы выйти из аккаунта.`
+                );
+
+                if (shouldLogout) {
+                    logoutUser();
+                    alert('Вы вышли из аккаунта.');
+                    window.location.href = ROUTES.home;
+                }
+            } else {
+                window.location.href = ROUTES.login;
+            }
         });
     }
 
     updateCartCounter();
+    updateUserUI();
 });

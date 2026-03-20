@@ -80,92 +80,165 @@
             margin-top: 5px;
             display: none;
         }
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container header-container">
-            <a href="{% url 'home' %}" class="logo">
-                <i class="fas fa-crown"></i>L<span>ume</span>
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="{% url 'home' %}">Главная</a></li>
-                    <li><a href="{% url 'catalog' %}">Каталог</a></li>
-                    <li><a href="{% url 'home' %}#categories">Категории</a></li>
-                    <li><a href="{% url 'home' %}#about">О нас</a></li>
-                    <li><a href="{% url 'home' %}#contact">Контакты</a></li>
-                </ul>
-            </nav>
-            <div class="nav-icons">
-                <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
-                <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
-                <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="auth-container">
-            <h2>Войти в аккаунт</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required />
-                    <div class="error-message" id="emailError"></div>
-                </div>
-                <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <input type="password" id="password" required />
-                    <div class="error-message" id="passwordError"></div>
-                </div>
-                <button type="submit" class="btn-auth">Войти</button>
-            </form>
-            <div class="auth-footer">
-                Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
-            </div>
+<header>
+    <div class="container header-container">
+        <a href="{% url 'home' %}" class="logo">
+            <i class="fas fa-crown"></i>L<span>ume</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Главная</a></li>
+                <li><a href="{% url 'catalog' %}">Каталог</a></li>
+                <li><a href="{% url 'home' %}#categories">Категории</a></li>
+                <li><a href="{% url 'home' %}#about">О нас</a></li>
+                <li><a href="{% url 'home' %}#contact">Контакты</a></li>
+            </ul>
+        </nav>
+        <div class="nav-icons">
+            <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
+            <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
+            <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
         </div>
     </div>
+</header>
 
-    <script src="{% static 'auth.js' %}?v=3"></script>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+<div class="container">
+    <div class="auth-container">
+        <h2>Войти в аккаунт</h2>
 
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const emailError = document.getElementById('emailError');
-            const passwordError = document.getElementById('passwordError');
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required />
+                <div class="error-message" id="emailError"></div>
+            </div>
 
-            emailError.style.display = 'none';
-            passwordError.style.display = 'none';
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" required />
+                <div class="error-message" id="passwordError"></div>
+            </div>
 
-            let valid = true;
+            <button type="submit" class="btn-auth">Войти</button>
+        </form>
 
-            if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-                emailError.textContent = 'Введите корректный email';
-                emailError.style.display = 'block';
-                valid = false;
-            }
+        <div class="success-message" id="successMessage"></div>
 
-            if (!password) {
-                passwordError.textContent = 'Введите пароль';
-                passwordError.style.display = 'block';
-                valid = false;
-            }
+        <div class="auth-footer">
+            Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+        </div>
+    </div>
+</div>
 
-            if (!valid) return;
+<script>
+const existingUser = localStorage.getItem('lume_current_user');
+const existingAccess = localStorage.getItem('lume_access_token');
 
-            if (validateUser(email, password)) {
-                setCurrentUser(email);
-                alert('Добро пожаловать обратно!');
-                window.location.href = '{% url 'home' %}';
-            } else {
-                passwordError.textContent = 'Неверный email или пароль';
-                passwordError.style.display = 'block';
+if (existingUser && existingAccess) {
+    window.location.href = "{% url 'home' %}";
+}
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+    const successMessage = document.getElementById('successMessage');
+
+    [emailError, passwordError].forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+    });
+    successMessage.style.display = 'none';
+    successMessage.textContent = '';
+
+    let valid = true;
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        emailError.textContent = 'Введите корректный email';
+        emailError.style.display = 'block';
+        valid = false;
+    }
+
+    if (!password) {
+        passwordError.textContent = 'Введите пароль';
+        passwordError.style.display = 'block';
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    try {
+        const response = await fetch('/api/accounts/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            passwordError.textContent = data.detail || 'Неверный email или пароль';
+            passwordError.style.display = 'block';
+            return;
+        }
+
+        localStorage.setItem('lume_access_token', data.access);
+        localStorage.setItem('lume_refresh_token', data.refresh);
+
+        const profileResponse = await fetch('/api/accounts/profile/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${data.access}`
             }
         });
-    </script>
+
+        if (!profileResponse.ok) {
+            passwordError.textContent = 'Не удалось получить профиль пользователя';
+            passwordError.style.display = 'block';
+            return;
+        }
+
+        const profile = await profileResponse.json();
+
+        localStorage.setItem('lume_current_user', JSON.stringify({
+            id: profile.id,
+            email: profile.email,
+            full_name: profile.full_name,
+            role: profile.role
+        }));
+
+        successMessage.textContent = `Вы вошли как ${profile.full_name || profile.email}`;
+        successMessage.style.display = 'block';
+
+        setTimeout(() => {
+            window.location.href = "{% url 'home' %}";
+        }, 1000);
+
+    } catch (error) {
+        passwordError.textContent = 'Ошибка соединения с сервером';
+        passwordError.style.display = 'block';
+        console.error(error);
+    }
+});
+</script>
 </body>
 </html>

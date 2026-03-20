@@ -153,6 +153,13 @@
 </div>
 
 <script>
+const regExistingUser = localStorage.getItem('lume_current_user');
+const regExistingAccess = localStorage.getItem('lume_access_token');
+
+if (regExistingUser && regExistingAccess) {
+    window.location.href = "{% url 'home' %}";
+}
+
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -182,7 +189,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         valid = false;
     }
 
-    if (!email || !/^\\S+@\\S+\\.\\S+$/.test(email)) {
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
         emailError.textContent = 'Введите корректный email';
         emailError.style.display = 'block';
         valid = false;
@@ -203,7 +210,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     if (!valid) return;
 
     try {
-        const response = await fetch('/api/accounts/register/', {
+        const registerResponse = await fetch('/api/accounts/register/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -216,27 +223,55 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             })
         });
 
-        const data = await response.json();
+        const registerData = await registerResponse.json();
 
-        if (!response.ok) {
-            if (data.email) {
-                emailError.textContent = Array.isArray(data.email) ? data.email[0] : data.email;
+        if (!registerResponse.ok) {
+            if (registerData.email) {
+                emailError.textContent = Array.isArray(registerData.email) ? registerData.email[0] : registerData.email;
                 emailError.style.display = 'block';
-            } else if (data.password) {
-                passwordError.textContent = Array.isArray(data.password) ? data.password[0] : data.password;
+            } else if (registerData.password) {
+                passwordError.textContent = Array.isArray(registerData.password) ? registerData.password[0] : registerData.password;
                 passwordError.style.display = 'block';
             } else {
-                alert(JSON.stringify(data));
+                alert(JSON.stringify(registerData));
             }
             return;
         }
 
-        successMessage.textContent = 'Регистрация прошла успешно. Теперь войди в аккаунт.';
+        const loginResponse = await fetch('/api/accounts/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
+
+        const loginData = await loginResponse.json();
+
+        if (!loginResponse.ok) {
+            alert('Аккаунт создан, но автоматический вход не выполнен.');
+            window.location.href = "{% url 'login' %}";
+            return;
+        }
+
+        localStorage.setItem('lume_access_token', loginData.access);
+        localStorage.setItem('lume_refresh_token', loginData.refresh);
+        localStorage.setItem('lume_current_user', JSON.stringify({
+            id: registerData.id,
+            email: registerData.email,
+            full_name: registerData.full_name,
+            role: registerData.role
+        }));
+
+        successMessage.textContent = `Регистрация успешна. Вы вошли как ${registerData.full_name || registerData.email}`;
         successMessage.style.display = 'block';
 
         setTimeout(() => {
-            window.location.href = "{% url 'login' %}";
-        }, 1200);
+            window.location.href = "{% url 'home' %}";
+        }, 1000);
 
     } catch (error) {
         alert('Ошибка соединения с сервером');

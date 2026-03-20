@@ -123,26 +123,40 @@
     <div id="productsGrid">
         {% for product in products %}
         <div class="product-card">
-            <div class="product-img">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                {% else %}
-                    <img src="https://via.placeholder.com/400x500?text=No+Image" alt="{{ product.name }}">
-                {% endif %}
-            </div>
+            <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                <div class="product-img">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/400x500?text=No+Image" alt="{{ product.name }}">
+                    {% endif %}
+                </div>
+            </a>
+
             <div class="product-info">
                 <span class="product-category">{{ product.category.name }}</span>
-                <h3>{{ product.name }}</h3>
+                <h3>
+                    <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                        {{ product.name }}
+                    </a>
+                </h3>
+                <p style="margin: 10px 0; color: #666;">
+                    {{ product.description|truncatechars:90 }}
+                </p>
                 <div class="product-price">{{ product.price }} ₽</div>
-                <a href="#"
-                   class="btn btn-outline add-to-cart-btn"
-                   data-id="{{ product.id }}"
-                   data-name="{{ product.name }}"
-                   data-category="{{ product.category.name }}"
-                   data-price="{{ product.price }}"
-                   data-image="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/400x500?text=No+Image{% endif %}">
-                    В корзину
-                </a>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+                    <a href="{% url 'product_detail' product.id %}" class="btn">Подробнее</a>
+                    <a href="#"
+                       class="btn btn-outline add-to-cart-btn"
+                       data-id="{{ product.id }}"
+                       data-name="{{ product.name }}"
+                       data-category="{{ product.category.name }}"
+                       data-price="{{ product.price }}"
+                       data-image="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/400x500?text=No+Image{% endif %}">
+                        В корзину
+                    </a>
+                </div>
             </div>
         </div>
         {% empty %}
@@ -151,6 +165,6 @@
     </div>
 </div>
 
-<script src="{% static 'script.js' %}?v=5"></script>
+<script src="{% static 'script.js' %}?v=6"></script>
 </body>
 </html>

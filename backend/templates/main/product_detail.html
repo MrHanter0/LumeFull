@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} — Lume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        .detail-wrapper {
+            padding: 50px 0;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        .detail-image {
+            background: #fff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+        .detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .detail-info {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+        .detail-category {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #f3f3f3;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .detail-title {
+            font-size: 34px;
+            margin-bottom: 15px;
+        }
+        .detail-price {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 20px;
+        }
+        .detail-meta {
+            display: grid;
+            gap: 12px;
+            margin: 20px 0 25px;
+        }
+        .detail-meta-item {
+            padding: 12px 14px;
+            background: #f8f8f8;
+            border-radius: 10px;
+        }
+        .detail-description {
+            line-height: 1.7;
+            margin-bottom: 25px;
+            white-space: pre-line;
+        }
+        .detail-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .related-section {
+            margin-top: 60px;
+        }
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 25px;
+        }
+        @media (max-width: 900px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .detail-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container header-container">
+        <a href="{% url 'home' %}" class="logo">
+            <i class="fas fa-crown"></i>L<span>ume</span>
+        </a>
+
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Главная</a></li>
+                <li><a href="{% url 'catalog' %}">Каталог</a></li>
+                <li><a href="{% url 'home' %}#categories">Категории</a></li>
+                <li><a href="{% url 'home' %}#about">О нас</a></li>
+                <li><a href="{% url 'home' %}#contact">Контакты</a></li>
+            </ul>
+        </nav>
+
+        <div class="nav-icons">
+            <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
+            <a href="{% url 'login' %}"><i class="fas fa-user"></i></a>
+            <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
+        </div>
+    </div>
+</header>
+
+<div class="container detail-wrapper">
+    <p style="margin-bottom: 20px;">
+        <a href="{% url 'catalog' %}" style="text-decoration: none;">← Вернуться в каталог</a>
+    </p>
+
+    <div class="detail-grid">
+        <div class="detail-image">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <img src="https://via.placeholder.com/700x800?text=No+Image" alt="{{ product.name }}">
+            {% endif %}
+        </div>
+
+        <div class="detail-info">
+            <span class="detail-category">{{ product.category.name }}</span>
+            <h1 class="detail-title">{{ product.name }}</h1>
+            <div class="detail-price">{{ product.price }} ₽</div>
+
+            <div class="detail-description">
+                {{ product.description }}
+            </div>
+
+            <div class="detail-meta">
+                <div class="detail-meta-item"><strong>ID товара:</strong> {{ product.id }}</div>
+                <div class="detail-meta-item"><strong>Категория:</strong> {{ product.category.name }}</div>
+                <div class="detail-meta-item"><strong>Остаток на складе:</strong> {{ product.stock }}</div>
+                <div class="detail-meta-item"><strong>Статус:</strong> {% if product.available %}Доступен{% else %}Недоступен{% endif %}</div>
+                <div class="detail-meta-item"><strong>Создан:</strong> {{ product.created|date:"d.m.Y H:i" }}</div>
+                <div class="detail-meta-item"><strong>Обновлён:</strong> {{ product.updated|date:"d.m.Y H:i" }}</div>
+            </div>
+
+            <div class="detail-actions">
+                <a href="#"
+                   class="btn add-to-cart-btn"
+                   data-id="{{ product.id }}"
+                   data-name="{{ product.name }}"
+                   data-category="{{ product.category.name }}"
+                   data-price="{{ product.price }}"
+                   data-image="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/700x800?text=No+Image{% endif %}">
+                    Добавить в корзину
+                </a>
+                <a href="{% url 'catalog' %}" class="btn btn-outline">Назад в каталог</a>
+            </div>
+        </div>
+    </div>
+
+    {% if related_products %}
+    <div class="related-section">
+        <div class="section-title">
+            <h2>Похожие товары</h2>
+        </div>
+
+        <div class="related-grid">
+            {% for item in related_products %}
+            <div class="product-card">
+                <a href="{% url 'product_detail' item.id %}" style="text-decoration: none; color: inherit;">
+                    <div class="product-img">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/400x500?text=No+Image" alt="{{ item.name }}">
+                        {% endif %}
+                    </div>
+                </a>
+                <div class="product-info">
+                    <span class="product-category">{{ item.category.name }}</span>
+                    <h3>
+                        <a href="{% url 'product_detail' item.id %}" style="text-decoration: none; color: inherit;">
+                            {{ item.name }}
+                        </a>
+                    </h3>
+                    <div class="product-price">{{ item.price }} ₽</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+                        <a href="{% url 'product_detail' item.id %}" class="btn">Подробнее</a>
+                        <a href="#"
+                           class="btn btn-outline add-to-cart-btn"
+                           data-id="{{ item.id }}"
+                           data-name="{{ item.name }}"
+                           data-category="{{ item.category.name }}"
+                           data-price="{{ item.price }}"
+                           data-image="{% if item.image %}{{ item.image.url }}{% else %}https://via.placeholder.com/400x500?text=No+Image{% endif %}">
+                            В корзину
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="{% static 'script.js' %}?v=6"></script>
+</body>
+</html>
