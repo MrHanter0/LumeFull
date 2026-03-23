@@ -1,0 +1,271 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет — Lume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        .profile-wrapper {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+        .profile-card,
+        .orders-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 24px;
+        }
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .profile-email {
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .profile-role {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #f3f3f3;
+            margin-bottom: 18px;
+        }
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 18px;
+        }
+        .btn-secondary {
+            display: inline-block;
+            padding: 12px 16px;
+            text-align: center;
+            border-radius: 999px;
+            text-decoration: none;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+        }
+        .orders-list {
+            display: grid;
+            gap: 16px;
+        }
+        .order-item {
+            border: 1px solid #ececec;
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .order-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .order-status {
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #eef3ff;
+            color: #2f5bd3;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .order-products {
+            margin-top: 10px;
+            color: #444;
+        }
+        .empty-text {
+            color: #777;
+        }
+        @media (max-width: 900px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container header-container">
+        <a href="{% url 'home' %}" class="logo">
+            <i class="fas fa-crown"></i>L<span>ume</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Главная</a></li>
+                <li><a href="{% url 'catalog' %}">Каталог</a></li>
+                <li><a href="{% url 'profile' %}">Кабинет</a></li>
+                <li><a href="{% url 'cart' %}">Корзина</a></li>
+            </ul>
+        </nav>
+        <div class="nav-icons">
+            <a href="{% url 'catalog' %}"><i class="fas fa-search"></i></a>
+            <a href="{% url 'profile' %}"><i class="fas fa-user"></i></a>
+            <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i></a>
+        </div>
+    </div>
+</header>
+
+<div class="profile-wrapper">
+    <div class="profile-grid">
+        <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <div class="profile-name" id="profileName">Загрузка...</div>
+            <div class="profile-email" id="profileEmail"></div>
+            <div class="profile-role" id="profileRole"></div>
+
+            <div class="profile-actions">
+                <a href="{% url 'catalog' %}" class="btn">Перейти в каталог</a>
+                <a href="{% url 'cart' %}" class="btn btn-outline">Открыть корзину</a>
+                <a href="/admin/" id="adminBtn" class="btn" style="display:none;">Перейти в админ-панель</a>
+                <button type="button" id="logoutBtn" class="btn-secondary">Выйти из аккаунта</button>
+            </div>
+        </div>
+
+        <div class="orders-card">
+            <h2 style="margin-bottom: 18px;">Мои заказы</h2>
+            <div id="ordersList" class="orders-list">
+                <div class="empty-text">Загрузка заказов...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const accessToken = localStorage.getItem('lume_access_token');
+const currentUserRaw = localStorage.getItem('lume_current_user');
+
+if (!accessToken || !currentUserRaw) {
+    window.location.href = "{% url 'login' %}";
+}
+
+function logoutUser() {
+    localStorage.removeItem('lume_access_token');
+    localStorage.removeItem('lume_refresh_token');
+    localStorage.removeItem('lume_current_user');
+    window.location.href = "{% url 'login' %}";
+}
+
+function getInitials(nameOrEmail) {
+    if (!nameOrEmail) return 'U';
+    const parts = nameOrEmail.trim().split(' ').filter(Boolean);
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return nameOrEmail.substring(0, 2).toUpperCase();
+}
+
+async function loadProfile() {
+    const profileResponse = await fetch('/api/accounts/profile/', {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+
+    if (!profileResponse.ok) {
+        logoutUser();
+        return;
+    }
+
+    const profile = await profileResponse.json();
+
+    document.getElementById('profileName').textContent = profile.full_name || 'Без имени';
+    document.getElementById('profileEmail').textContent = profile.email || '';
+    document.getElementById('profileRole').textContent = profile.role === 'admin' ? 'Администратор' : 'Пользователь';
+    document.getElementById('profileAvatar').textContent = getInitials(profile.full_name || profile.email);
+
+    localStorage.setItem('lume_current_user', JSON.stringify({
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name,
+        role: profile.role
+    }));
+
+    if (profile.role === 'admin') {
+        document.getElementById('adminBtn').style.display = 'inline-block';
+    }
+}
+
+async function loadOrders() {
+    const ordersList = document.getElementById('ordersList');
+
+    const response = await fetch('/api/orders/my/', {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+
+    if (!response.ok) {
+        ordersList.innerHTML = '<div class="empty-text">Не удалось загрузить заказы.</div>';
+        return;
+    }
+
+    const orders = await response.json();
+
+    if (!orders || orders.length === 0) {
+        ordersList.innerHTML = '<div class="empty-text">У вас пока нет заказов.</div>';
+        return;
+    }
+
+    ordersList.innerHTML = orders.map(order => `
+        <div class="order-item">
+            <div class="order-top">
+                <div>
+                    <strong>Заказ #${order.id}</strong><br>
+                    <small>${new Date(order.created_at).toLocaleString('ru-RU')}</small>
+                </div>
+                <div class="order-status">${order.status}</div>
+            </div>
+            <div><strong>Сумма:</strong> ${order.total_price} ₽</div>
+            <div><strong>Адрес:</strong> ${order.shipping_address || '—'}</div>
+            <div><strong>Телефон:</strong> ${order.phone || '—'}</div>
+            <div class="order-products">
+                <strong>Товары:</strong>
+                <ul>
+                    ${(order.items || []).map(item => `<li>${item.product_name} × ${item.quantity}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `).join('');
+}
+
+document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+
+(async () => {
+    try {
+        await loadProfile();
+        await loadOrders();
+    } catch (e) {
+        console.error(e);
+        logoutUser();
+    }
+})();
+</script>
+</body>
+</html>

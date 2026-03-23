@@ -5,7 +5,7 @@ from .models import Product, Category
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ['id', 'name', 'slug', 'description']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -15,10 +15,21 @@ class ProductSerializer(serializers.ModelSerializer):
         source='category',
         write_only=True
     )
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            'id', 'category', 'category_id', 'name', 'slug', 'description',
-            'price', 'image', 'stock', 'available', 'created', 'updated'
+            'id', 'category', 'category_id',
+            'name', 'slug', 'description',
+            'price', 'image', 'stock',
+            'available', 'created', 'updated'
         ]
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url

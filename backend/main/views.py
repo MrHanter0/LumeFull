@@ -66,6 +66,10 @@ def product_detail(request, product_id):
     })
 
 
+def profile(request):
+    return render(request, 'accounts/profile.html')
+
+
 def about(request):
     return redirect('/')
 

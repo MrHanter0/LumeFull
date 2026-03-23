@@ -3,7 +3,9 @@ const ROUTES = {
     catalog: '/catalog/',
     cart: '/cart/',
     login: '/login/',
-    register: '/register/'
+    register: '/register/',
+    profile: '/profile/',
+    admin: '/admin/'
 };
 
 function getCart() {
@@ -27,12 +29,6 @@ function getCurrentUser() {
 
 function isAuthenticated() {
     return !!localStorage.getItem('lume_access_token') && !!getCurrentUser();
-}
-
-function logoutUser() {
-    localStorage.removeItem('lume_access_token');
-    localStorage.removeItem('lume_refresh_token');
-    localStorage.removeItem('lume_current_user');
 }
 
 function updateCartCounter() {
@@ -100,40 +96,29 @@ function updateUserUI() {
 
         if (user) {
             badge.style.display = 'block';
-            icon.style.color = '#2ecc71';
-            link.title = `Вы вошли как ${user.full_name || user.email}`;
+            link.title = `${user.full_name || user.email}`;
         } else {
             badge.style.display = 'none';
-            icon.style.color = '';
             link.title = 'Войти';
         }
     });
 
-    let userStatus = document.getElementById('userStatusText');
-
-    if (!userStatus) {
-        const navIcons = document.querySelector('.nav-icons');
-        if (navIcons) {
-            userStatus = document.createElement('span');
-            userStatus.id = 'userStatusText';
-            Object.assign(userStatus.style, {
-                marginLeft: '10px',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#2ecc71',
-                whiteSpace: 'nowrap'
-            });
-            navIcons.appendChild(userStatus);
+    document.querySelectorAll('.nav-icons').forEach(navIcons => {
+        let adminLink = navIcons.querySelector('.header-admin-link');
+        if (adminLink) {
+            adminLink.remove();
         }
-    }
 
-    if (userStatus) {
-        if (user) {
-            userStatus.textContent = user.full_name || user.email;
-        } else {
-            userStatus.textContent = '';
+        if (user && user.role === 'admin') {
+            adminLink = document.createElement('a');
+            adminLink.href = ROUTES.admin;
+            adminLink.className = 'header-admin-link';
+            adminLink.textContent = 'Admin';
+            adminLink.style.fontWeight = '700';
+            adminLink.style.color = 'var(--accent-gold)';
+            navIcons.prepend(adminLink);
         }
-    }
+    });
 }
 
 function addToCartFromButton(button) {
@@ -224,19 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userIcon) {
         userIcon.addEventListener('click', e => {
             e.preventDefault();
-
-            const user = getCurrentUser();
-
-            if (user) {
-                const shouldLogout = confirm(
-                    `Вы вошли как:\n${user.full_name || 'Пользователь'}\n${user.email}\n\nНажмите OK, чтобы выйти из аккаунта.`
-                );
-
-                if (shouldLogout) {
-                    logoutUser();
-                    alert('Вы вышли из аккаунта.');
-                    window.location.href = ROUTES.home;
-                }
+            if (isAuthenticated()) {
+                window.location.href = ROUTES.profile;
             } else {
                 window.location.href = ROUTES.login;
             }

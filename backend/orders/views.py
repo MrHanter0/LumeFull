@@ -1,16 +1,16 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderCreateSerializer
 from products.models import Product
-from accounts.permissions import IsCustomerOrAdmin
+from accounts.permissions import IsCustomerOrAdmin, IsAdminUserRole
 
 
 class OrderCreateView(APIView):
-    permission_classes = [IsCustomerOrAdmin]
+    permission_classes = [permissions.IsAuthenticated]
 
     @transaction.atomic
     def post(self, request):
@@ -25,38 +25,32 @@ class OrderCreateView(APIView):
             product_id = item.get('product_id')
             quantity = item.get('quantity', 1)
 
-            if not product_id or quantity < 1:
+            if not product_id:
                 return Response(
-                    {'error': 'Каждый элемент заказа должен содержать product_id и quantity >= 1'},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    {'error': 'product_id обязателен'},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
-            try:
-                product = Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
-                return Response(
-                    {'error': f'Товар с id={product_id} не найден'},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            product = get_object_or_404(Product, id=product_id)
 
             if not product.available or product.stock < quantity:
                 return Response(
                     {'error': f'Товар "{product.name}" недоступен в количестве {quantity}'},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
             total_price += product.price * quantity
             order_items.append({
                 'product': product,
                 'quantity': quantity,
-                'price': product.price,
+                'price': product.price
             })
 
         order = Order.objects.create(
             user=request.user,
             total_price=total_price,
             shipping_address=serializer.validated_data.get('shipping_address', ''),
-            phone=serializer.validated_data.get('phone', ''),
+            phone=serializer.validated_data.get('phone', '')
         )
 
         for item in order_items:
@@ -64,23 +58,23 @@ class OrderCreateView(APIView):
                 order=order,
                 product=item['product'],
                 quantity=item['quantity'],
-                price=item['price'],
+                price=item['price']
             )
             item['product'].stock -= item['quantity']
-            item['product'].save()
+            item['product'].save(update_fields=['stock'])
 
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
 class OrderListView(generics.ListAPIView):
     serializer_class = OrderSerializer
-    permission_classes = [IsCustomerOrAdmin]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin':
-            return Order.objects.prefetch_related('items__product').all()
-        return Order.objects.prefetch_related('items__product').filter(user=user)
+        if getattr(user, 'role', None) == 'admin':
+            return Order.objects.prefetch_related('items__product').select_related('user').all().order_by('-created_at')
+        return Order.objects.prefetch_related('items__product').select_related('user').filter(user=user).order_by('-created_at')
 
 
 class MyOrderListView(generics.ListAPIView):
@@ -88,4 +82,6 @@ class MyOrderListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.prefetch_related('items__product').filter(user=self.request.user)
+        return Order.objects.prefetch_related('items__product').select_related('user').filter(
+            user=self.request.user
+        ).order_by('-created_at')
