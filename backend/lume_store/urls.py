@@ -2,32 +2,35 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 
-def api_root(request):
-    return JsonResponse({
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
         'accounts': {
-            'register': '/api/accounts/register/',
-            'login': '/api/accounts/login/',
-            'refresh': '/api/accounts/token/refresh/',
-            'profile': '/api/accounts/profile/',
+            'register': reverse('register', request=request, format=format),
+            'login': reverse('token_obtain_pair', request=request, format=format),
+            'refresh': reverse('token_refresh', request=request, format=format),
+            'profile': reverse('user_profile', request=request, format=format),
         },
         'products': {
-            'list': '/api/products/',
-            'create': '/api/products/create/',
-            'categories': '/api/products/categories/',
-            'detail_example': '/api/products/1/',
+            'list': reverse('products:product_list', request=request, format=format),
+            'create': reverse('products:product_create', request=request, format=format),
+            'categories': reverse('products:category_list', request=request, format=format),
+            'detail_example': request.build_absolute_uri('/api/products/1/'),
         },
         'orders': {
-            'create': '/api/orders/create/',
-            'list': '/api/orders/',
-            'my_orders': '/api/orders/my/',
+            'create': reverse('order_create', request=request, format=format),
+            'list': reverse('order_list', request=request, format=format),
+            'my_orders': reverse('my_orders', request=request, format=format),
         },
         'cart': {
-            'current': '/api/cart/',
-            'add': '/api/cart/add/',
-            'remove_example': '/api/cart/remove/1/',
+            'current': reverse('cart', request=request, format=format),
+            'add': reverse('add_to_cart', request=request, format=format),
+            'remove_example': request.build_absolute_uri('/api/cart/remove/1/'),
         }
     })
 
