@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Cart, CartItem
 from .serializers import CartSerializer, AddToCartSerializer
-from products.models import Product
 
 
 def get_or_create_cart(request):
@@ -19,7 +18,7 @@ def get_or_create_cart(request):
 
 
 class CartView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         cart = get_or_create_cart(request)
@@ -27,22 +26,11 @@ class CartView(APIView):
         return Response(serializer.data)
 
 
-class AddToCartView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+class AddToCartView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
     serializer_class = AddToCartSerializer
 
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer()
-        return Response({
-            "message": "Отправьте POST-запрос для добавления товара в корзину.",
-            "example": {
-                "product_id": 1,
-                "quantity": 1
-            },
-            "fields": serializer.get_fields().keys()
-        })
-
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -65,13 +53,18 @@ class AddToCartView(generics.GenericAPIView):
             'success': True,
             'cart_total': cart.total_items,
             'message': f'Товар "{product.name}" добавлен в корзину'
-        }, status=status.HTTP_200_OK)
+        }, status=status.HTTP_201_CREATED)
 
 
 class RemoveFromCartView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request, item_id):
-        cart_item = CartItem.objects.get(id=item_id)
+        cart = get_or_create_cart(request)
+        cart_item = CartItem.objects.filter(id=item_id, cart=cart).first()
+
+        if not cart_item:
+            return Response({'error': 'Товар в корзине не найден'}, status=status.HTTP_404_NOT_FOUND)
+
         cart_item.delete()
         return Response({'success': True})
